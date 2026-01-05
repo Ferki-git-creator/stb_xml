@@ -1,0 +1,122 @@
+denis@dev:~/T/data/stb_xml$ gcc -o test test_stb_xml.c -Wall -Wextra -O2 -std=c99
+denis@dev:~/T/data/stb_xml$ ./test                                     === STB XML PARSER PERFORMANCE ===
+
+1. Students XML (functional test):
+Tokens: 17
+[0] TAG_OPEN: "students" (self-closing: no)
+[1] TAG_OPEN: "student" (self-closing: no)
+[2] ATTR: "id" value="101"
+[3] ATTR: "group" value="A"
+[4] TAG_OPEN: "name" (self-closing: no)
+[5] TEXT: "John Smith"
+[6] TAG_CLOSE: "name"
+[7] TAG_OPEN: "grades" (self-closing: no)
+[8] TAG_OPEN: "math" (self-closing: no)
+[9] TEXT: "12"
+[10] TAG_CLOSE: "math"
+[11] TAG_OPEN: "physics" (self-closing: no)
+[12] TEXT: "11"
+[13] TAG_CLOSE: "physics"
+[14] TAG_CLOSE: "grades"
+[15] TAG_CLOSE: "student"
+[16] TAG_CLOSE: "students"
+
+2. Performance test (small XML, 72 bytes):
+Small XML:
+  Time: 0.027 sec (iterations: 100000)
+  Speed: 188 MB/sec
+  Tokens/sec: 32786885
+  Avg tokens per parse: 9
+
+3. Performance test (medium XML, ~1KB):
+Medium XML:
+  Time: 0.030 sec (iterations: 20000)
+  Speed: 556 MB/sec
+  Tokens/sec: 94916614
+  Avg tokens per parse: 142
+
+4. Performance test (large XML, ~1MB):
+Generated XML: 1048653 bytes
+Large XML (1MB):
+  Time: 0.012 sec (iterations: 100)
+  Speed: 8693 MB/sec
+  Tokens/sec: 86926287
+  Avg tokens per parse: 10000
+
+5. Performance test (large XML, ~1MB, more iterations):
+Large XML (1MB, 500 iterations):
+  Time: 0.057 sec (iterations: 500)
+  Speed: 8707 MB/sec
+  Tokens/sec: 87060995
+  Avg tokens per parse: 10000
+
+
+=== PARSER FEATURES ===
+1. 6-byte tokens (vs libxml2: 40+ bytes per node)
+2. 4-state machine (vs libxml2: complex state machine)
+3. Bit-packed flags (reused fields)
+4. Zero-copy (no data duplication)
+5. Single pass (no backtracking)
+6. Minimal error checking
+7. ~1500 bytes total (vs libxml2: 500KB+)
+8. No dependencies, no allocations during parsing
+
+=== COMPARISON WITH LIBXML2 ===
+To run comparison:
+  gcc -o test_libxml test_libxml.c -lxml2 -O2 -I/usr/include/libxml2
+  ./test_libxml
+
+denis@dev:~/T/data/stb_xml$ gcc -o test_libxml test_libxml.c -lxml2 -O2 -I/usr/include/libxml2
+denis@dev:~/T/data/stb_xml$ ./test_libxml                              === LIBXML2 PERFORMANCE (FAIR COMPARISON) ===
+
+1. Performance test (small XML, 72 bytes):
+libxml2 - Small XML (10K iterations):
+  Time: 0.035 sec (iterations: 10000)
+  Speed: 15 MB/sec
+  Avg nodes per parse: 6
+
+2. Performance test (medium XML, ~1KB):
+libxml2 - Medium XML (5K iterations):
+  Time: 0.114 sec (iterations: 5000)
+  Speed: 36 MB/sec
+  Avg nodes per parse: 102
+
+3. Performance test (large XML, ~1MB):
+Generated XML: 1048653 bytes
+libxml2 - Large XML (1MB, 10 iterations):
+  Time: 0.232 sec (iterations: 10)
+  Speed: 43 MB/sec
+  Avg nodes per parse: 87357
+
+4. Performance test (large XML, ~1MB, more iterations):
+libxml2 - Large XML (1MB, 50 iterations):
+  Time: 1.090 sec (iterations: 50)
+  Speed: 46 MB/sec
+  Avg nodes per parse: 87357
+
+
+=== DIRECT COMPARISON SUMMARY ===
+For identical XML files (1MB) and 10 iterations:
+- stb_xml: ~5000+ MB/sec (expected)
+- libxml2: ~15-30 MB/sec (expected)
+Difference: stb_xml is 150-300 times faster!
+
+Reasons for the difference:
+1. stb_xml: zero-copy, zero-allocation parsing
+2. libxml2: full validation, DOM tree creation
+3. stb_xml: 6-byte tokens vs libxml2: 40+ bytes per node
+4. stb_xml: single-pass vs libxml2: multiple passes
+
+=== WHEN TO USE WHICH ===
+Use stb_xml when:
+- Maximum speed is required
+- Limited memory (embedded systems)
+- Simple XML (configurations, game data)
+- Zero-allocation requirements
+
+Use libxml2 when:
+- Full XML validation is needed
+- XPath, XSLT, XML Schema required
+- Working with invalid XML
+- Full DOM tree with modification capability
+denis@dev:~/T/data/stb_xml$
